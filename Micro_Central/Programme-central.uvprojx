@@ -431,6 +431,11 @@
               <FileType>1</FileType>
               <FilePath>.\Gestion_DFPLAYER.c</FilePath>
             </File>
+            <File>
+              <FileName>Gestion GPS.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Gestion GPS.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

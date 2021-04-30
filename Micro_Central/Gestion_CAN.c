@@ -34,7 +34,7 @@ void init_CAN_Transmiter()
 {
 	Driver_CAN2.Initialize(NULL,Callback_CAN_Transmiter);
 	Driver_CAN2.PowerControl(ARM_POWER_FULL);
-	Driver_CAN2.SetMode(	ARM_CAN_MODE_INITIALIZATION);
+	Driver_CAN2.SetMode(ARM_CAN_MODE_INITIALIZATION);
 	Driver_CAN2.SetBitrate( ARM_CAN_BITRATE_NOMINAL,
 													125000,
 													ARM_CAN_BIT_PROP_SEG(5U)|
@@ -57,8 +57,8 @@ void init_CAN_Receiver()
                           ARM_CAN_BIT_PHASE_SEG2(1U) |         // Set phase segment 2 to 1 time quantum (total bit is 8 time quanta long)
                           ARM_CAN_BIT_SJW(1U));                // Resynchronization jump width is same as phase segment 2
 	Driver_CAN1.ObjectConfigure(0,ARM_CAN_OBJ_RX);
-		Driver_CAN1.ObjectSetFilter(0,ARM_CAN_FILTER_ID_EXACT_ADD,
-																ARM_CAN_STANDARD_ID(0x111),
-																0);
+	Driver_CAN1.ObjectSetFilter(0,ARM_CAN_FILTER_ID_RANGE_ADD,
+																ARM_CAN_STANDARD_ID(0x000),
+																ARM_CAN_STANDARD_ID(0xfff));
 	Driver_CAN1.SetMode(ARM_CAN_MODE_NORMAL);
 }

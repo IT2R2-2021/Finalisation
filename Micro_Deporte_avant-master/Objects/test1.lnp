@@ -1,4 +1,5 @@
 --cpu Cortex-M4.fp
+".\objects\gestion_ultrason.o"
 ".\objects\main.o"
 ".\objects\gestion_lumiere.o"
 ".\objects\gestion_can.o"
@@ -7,6 +8,7 @@
 ".\objects\rtx_conf_cm.o"
 ".\objects\can_stm32f4xx.o"
 ".\objects\spi_stm32f4xx.o"
+".\objects\i2c_stm32f4xx.o"
 ".\objects\stm32f4xx_hal.o"
 ".\objects\stm32f4xx_hal_adc.o"
 ".\objects\stm32f4xx_hal_adc_ex.o"

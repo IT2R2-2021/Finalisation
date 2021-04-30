@@ -4,10 +4,16 @@
 #include "stm32f4xx_hal.h"              // Keil::Device:STM32Cube HAL:Common
 #include "cmsis_os.h"                   // ARM::CMSIS:RTOS:Keil RTX
 #include "Driver_SPI.h"                 // ::CMSIS Driver:SPI
+#include "Driver_I2C.h"                 // ::CMSIS Driver:I2C
+#include "Driver_USART.h"               // ::CMSIS Driver:USART
 #include "Gestion_lumiere.h"
 #include "Gestion_CAN.h"
+#include "Gestion_ultrason.h"
+#include "Gestion_RFID.h"
 #include "stdio.h"
 
+#define Slave_I2C_ADDR (0x70)
+#define Slave_I2C_ADDR2 (0x74)
 
 #ifdef _RTE_
 #include "RTE_Components.h"             // Component selection
@@ -42,9 +48,9 @@ uint32_t HAL_GetTick (void) {
 static void SystemClock_Config(void);
 static void Error_Handler(void);
 
-//Gestion CAN
+//Variable Global Gestion CAN
 extern ARM_DRIVER_CAN Driver_CAN2;
-struct BAL_CAN {short ID_CAN;char data_BAL[8];char lengt};
+struct BAL_CAN {short ID_CAN;char data_BAL[8];char lengt;};
 struct BAL_CAN BAL_INIT_CAN;
 osMailQId ID_BAL_CAN;
 osMailQDef (BAL_CAN,5,BAL_INIT_CAN);
@@ -53,6 +59,22 @@ osMailQDef (BAL_CAN,5,BAL_INIT_CAN);
 extern ARM_DRIVER_SPI Driver_SPI1;
 extern char tab_Ruban_led[60*4+4+4];
 extern ADC_HandleTypeDef myADC2Handle;
+
+//Variable Global Ultrason
+extern ARM_DRIVER_I2C Driver_I2C1;
+
+//variable Global RFID
+extern ARM_DRIVER_USART Driver_USART2;
+
+//Os du RFID
+void Thread_gestion_RFID (void const * argument);
+osThreadId ID_gestion_RFID;
+osThreadDef(Thread_gestion_RFID,osPriorityNormal,1,0);
+
+//Os des capteurs ultrason
+void Thread_Ultrason(void const *argument);
+osThreadId ID_Ultrason;
+osThreadDef(Thread_Ultrason,osPriorityNormal,1,0);
 
 //OS des phares
 void Thread_gestion_phare();
@@ -79,6 +101,12 @@ int main(void)
 	LED_Initialize();
 	init_SPI();
 
+	//Initialisation pour les ultrason
+	Init_I2C();
+	
+	//Initialisation pour le RFID
+	init_UART2_RFID();
+	
 	//Init CAN
 	init_CAN();
 	
@@ -86,11 +114,12 @@ int main(void)
 	/* Initialize CMSIS-RTOS2 */
 	osKernelInitialize ();
 	
-	ID_gestion_phare 	= osThreadCreate(osThread	(Thread_gestion_phare)	,NULL);
+//	ID_gestion_phare 	= osThreadCreate(osThread	(Thread_gestion_phare)	,NULL);
 	ID_CAN_Transmiter = osThreadCreate(osThread	(Thread_CAN_Transmiter)	,NULL);
 	ID_CAN_Receiver 	= osThreadCreate(osThread	(Thread_CAN_Receiver)		,NULL);
+	ID_Ultrason 			= osThreadCreate(osThread (Thread_Ultrason)				,NULL);
 	ID_BAL_CAN 				= osMailCreate	(osMailQ 	(BAL_CAN)								,NULL);
-
+	ID_gestion_RFID		= osThreadCreate(osThread (Thread_gestion_RFID) 	,NULL);
 	osKernelStart();
 }
 
@@ -255,6 +284,7 @@ void Thread_CAN_Transmiter()
 	while (1)
 	{
 		EV_CAN_Transmiter=osMailGet(ID_BAL_CAN, osWaitForever);												// attente de reception d'un message
+		LED_On(3);
 		ptr_reception=EV_CAN_Transmiter.value.p;																			// récupération adresse du message
 		reception=*ptr_reception;																											// récupération donnée du message
 		osMailFree(ID_BAL_CAN,ptr_reception);																					// libération espace de la boite mail
@@ -263,6 +293,7 @@ void Thread_CAN_Transmiter()
 		tx_msg_info.rtr=0;																														// donnée (0) et non commande
 		Driver_CAN2.MessageSend(2,&tx_msg_info,reception.data_BAL,reception.lengt); 	// envoie sur l'objet 2 du CAN
 		osSignalWait(0x01, osWaitForever);																						// sommeil en attente fin emission
+		LED_Off(3);
 		osDelay(10);																																	// attente de 10 ms
 	}		
 }
@@ -285,5 +316,47 @@ void Thread_CAN_Receiver()
 		osDelay(1000);
 		LED_Off(2);
 		osDelay(1000);
+	}
+}
+void Thread_Ultrason(void const *argument){
+	
+	//BAL_CAN
+	struct BAL_CAN envoie;
+	struct BAL_CAN *ptr_envoie;
+	envoie.data_BAL[0]=0x55;
+	envoie.data_BAL[1]=0xAA;
+
+	while (1)
+  {		
+		LED_On(1);
+		startranging(Slave_I2C_ADDR);
+		startranging(Slave_I2C_ADDR2);
+		osDelay(80);
+		envoie.data_BAL[0]=Read_I2C_Byte(Slave_I2C_ADDR,0x03);
+		envoie.data_BAL[1]=Read_I2C_Byte(Slave_I2C_ADDR2,0x03);
+		LED_Off(1);
+		envoie.ID_CAN = 0x005;															// valeur arbitraire à changer
+		envoie.lengt = 2;																		// 2 bits envoyé (Data 1 + Data 2)
+
+		ptr_envoie=osMailAlloc(ID_BAL_CAN, osWaitForever);	// attente de place dans la boite mail
+		*ptr_envoie=envoie;																	// affectation message dans la boite mail
+		osMailPut(ID_BAL_CAN,ptr_envoie);										// envoie sur le bus CAN (déclenche fonction CAN)
+		osDelay(70);
+  }
+}
+
+
+
+void Thread_gestion_RFID (void const * argument)
+{
+	char num_son = 0x02;	
+	int *ptr;
+	char buffer[50];
+	char badge1[50]={0x02,0x33,0x34,0x30,0x30,0x43,0x37,0x39,044,0x43,0x43,0x41,0x31,0x03}; // StartByte + (data + checksum)+ EndByte
+  init_UART2_RFID();
+	while(1)
+	{
+		Driver_USART2.Receive(buffer,14);
+		while(Driver_USART2.GetRxCount()<14); 	
 	}
 }

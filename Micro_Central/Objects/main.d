@@ -12,4 +12,5 @@
 .\objects\main.o: C:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include\Driver_USART.h
 .\objects\main.o: Gestion_CAN.h
 .\objects\main.o: Gestion_DFPLAYER.h
+.\objects\main.o: Gestion_GPS.h
 .\objects\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
