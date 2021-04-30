@@ -1,6 +1,7 @@
 #include "Driver_USART.h"               // ::CMSIS Driver:USART
-extern ARM_DRIVER_USART Driver_USART2;
+#include "cmsis_os.h"                   // ARM::CMSIS:RTOS:Keil RTX
 
+extern ARM_DRIVER_USART Driver_USART2;
 
 void init_UART2_DFPLAYER(void){
 	Driver_USART2.Initialize(NULL);
@@ -60,7 +61,7 @@ void LectureDFPlayer(char num_son){
 		
 	tab[7]=checksumH;
 	tab[8]=checksumL;
-		
+   
 	while(Driver_USART2.GetStatus().tx_busy == 1); // attente buffer TX vide
 	Driver_USART2.Send(tab,80);	
 		

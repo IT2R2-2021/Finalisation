@@ -89,6 +89,7 @@ osThreadId ID_CAN_Receiver ;
 osThreadDef(Thread_CAN_Transmiter, osPriorityNormal,1,0);
 osThreadDef(Thread_CAN_Receiver, osPriorityNormal,1,0);
 
+
 int main(void)
 {
 	//Init micro
@@ -110,16 +111,19 @@ int main(void)
 	//Init CAN
 	init_CAN();
 	
+	//Init RFID
+	 init_UART2_RFID();
+
 		
 	/* Initialize CMSIS-RTOS2 */
 	osKernelInitialize ();
 	
-//	ID_gestion_phare 	= osThreadCreate(osThread	(Thread_gestion_phare)	,NULL);
+	ID_gestion_phare 	= osThreadCreate(osThread	(Thread_gestion_phare)	,NULL);
 	ID_CAN_Transmiter = osThreadCreate(osThread	(Thread_CAN_Transmiter)	,NULL);
 	ID_CAN_Receiver 	= osThreadCreate(osThread	(Thread_CAN_Receiver)		,NULL);
+	ID_gestion_RFID		= osThreadCreate(osThread (Thread_gestion_RFID) 	,NULL);
 	ID_Ultrason 			= osThreadCreate(osThread (Thread_Ultrason)				,NULL);
 	ID_BAL_CAN 				= osMailCreate	(osMailQ 	(BAL_CAN)								,NULL);
-	ID_gestion_RFID		= osThreadCreate(osThread (Thread_gestion_RFID) 	,NULL);
 	osKernelStart();
 }
 
@@ -251,7 +255,7 @@ void Thread_gestion_phare()
 		if (ADC_Value<140)
 		{
 			LED_On(1);
-			switch_ruban_led(0x01);
+			switch_ruban_led(0x03);
 			envoie.data_BAL[0]=0xFF;
 		}
 		if (ADC_Value>180)
@@ -345,18 +349,33 @@ void Thread_Ultrason(void const *argument){
   }
 }
 
-
-
 void Thread_gestion_RFID (void const * argument)
 {
-	char num_son = 0x02;	
-	int *ptr;
+	int i=0,verif=1;
 	char buffer[50];
-	char badge1[50]={0x02,0x33,0x34,0x30,0x30,0x43,0x37,0x39,044,0x43,0x43,0x41,0x31,0x03}; // StartByte + (data + checksum)+ EndByte
-  init_UART2_RFID();
+	char badge1[50]={0x02,0x33,0x34,0x30,0x30,0x43,0x37,0x39,044,0x43,0x43,0x41,0x32,0x03}; // StartByte + (data + checksum)+ EndByte	
+	//BAL_CAN
+	struct BAL_CAN envoie;
+	struct BAL_CAN *ptr_envoie;
+	envoie.data_BAL[0]=0x55;
+	envoie.data_BAL[1]=0xAA;
 	while(1)
 	{
+		verif=1;
 		Driver_USART2.Receive(buffer,14);
-		while(Driver_USART2.GetRxCount()<14); 	
-	}
+    osSignalWait(0x01, osWaitForever);		
+		for(i=0;i<7;i++)
+		{
+			if (buffer[i]!=badge1[i]) verif = 0;
+		}
+		if(verif == 1)
+		{
+			envoie.ID_CAN=0x009;
+			envoie.data_BAL[0]=0xFF;
+			envoie.lengt=1;
+			ptr_envoie=osMailAlloc(ID_BAL_CAN, osWaitForever);	// attente de place dans la boite mail
+			*ptr_envoie=envoie;																	// affectation message dans la boite mail
+			osMailPut(ID_BAL_CAN,ptr_envoie);										// envoie sur le bus CAN (déclenche fonction CAN)
+		 }
+	}	 
 }

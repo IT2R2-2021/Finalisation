@@ -84,8 +84,6 @@ void switch_ruban_led(char etat)
 	switch (etat)
 	{
 		case 0x00:
-			//début de trame 0x00 00 00 00
-			for (i=0;i<4;i++) tab_Ruban_led[i] = 0;
 			// 60 LED éteinte
 				for (nb_led = 0; nb_led <60;nb_led++)
 				{
@@ -182,5 +180,55 @@ void switch_ruban_led(char etat)
 				}
 
 				break;
+		case 0x03:
+			for (nb_led = 0; nb_led <4;nb_led++)	//Feu de nuit gauche arrière
+			{
+				tab_Ruban_led[4+nb_led*4]=0xff; //0xFF
+				tab_Ruban_led[5+nb_led*4]=0;	//BLUE
+				tab_Ruban_led[6+nb_led*4]=0;	//GREEN
+				tab_Ruban_led[7+nb_led*4]=255;	//RED
+			}
+			
+			for (nb_led = 4; nb_led <6;nb_led++)	//Feu clignotant gauche arrière
+			{
+				tab_Ruban_led[4+nb_led*4]=0xff; //0xFF
+				tab_Ruban_led[5+nb_led*4]=0;	//BLUE
+				tab_Ruban_led[6+nb_led*4]=165;	//GREEN
+				tab_Ruban_led[7+nb_led*4]=255;	//RED
+			}
+			
+			for (nb_led = 6; nb_led <8;nb_led++)	//Feu de recule gauche arrière
+			{
+				tab_Ruban_led[4+nb_led*4]=0xff; //0xFF
+				tab_Ruban_led[5+nb_led*4]=0;	//BLUE
+				tab_Ruban_led[6+nb_led*4]=0;	//GREEN
+				tab_Ruban_led[7+nb_led*4]=255;	//RED
+			}
+			for (nb_led = 8; nb_led <12;nb_led++)	//Feu de nuit droite arrière
+			{
+				tab_Ruban_led[4+nb_led*4]=0xff; //0xFF
+				tab_Ruban_led[5+nb_led*4]=0;	//BLUE
+				tab_Ruban_led[6+nb_led*4]=0;	//GREEN
+				tab_Ruban_led[7+nb_led*4]=255;	//RED
+			}
+			
+			for (nb_led = 12; nb_led <14;nb_led++)	//Feu de recule gauche arrière
+			{
+				tab_Ruban_led[4+nb_led*4]=0xff; //0xFF
+				tab_Ruban_led[5+nb_led*4]=0;	//BLUE
+				tab_Ruban_led[6+nb_led*4]=0;	//GREEN
+				tab_Ruban_led[7+nb_led*4]=255;	//RED
+			}
+
+			
+			for (nb_led = 14; nb_led <16;nb_led++)	//Feu clignotant gauche arrière
+			{
+				tab_Ruban_led[4+nb_led*4]=0xff; //0xFF
+				tab_Ruban_led[5+nb_led*4]=0;	//BLUE
+				tab_Ruban_led[6+nb_led*4]=165;	//GREEN
+				tab_Ruban_led[7+nb_led*4]=255;	//RED
+			}
+
+			break;
 		}
 }

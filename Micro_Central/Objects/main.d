@@ -14,3 +14,4 @@
 .\objects\main.o: Gestion_DFPLAYER.h
 .\objects\main.o: Gestion_GPS.h
 .\objects\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
+.\objects\main.o: Gestion_Lidar.h

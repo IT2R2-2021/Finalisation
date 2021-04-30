@@ -4,3 +4,4 @@
 .\objects\gestion gps.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stddef.h
 .\objects\gestion gps.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
 .\objects\gestion gps.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h
+.\objects\gestion gps.o: C:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\RTOS\RTX\INC\cmsis_os.h

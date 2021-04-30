@@ -9,6 +9,7 @@
 #include "Gestion_DFPLAYER.h"
 #include "Gestion_GPS.h"
 #include "stdio.h"
+#include "Gestion_Lidar.h"
 
 //Variable+Mutex GLCD
 extern GLCD_FONT GLCD_Font_6x8;
@@ -21,7 +22,7 @@ osMutexDef (mut_GLCD);
 extern ARM_DRIVER_CAN Driver_CAN1;
 extern ARM_DRIVER_CAN Driver_CAN2;
 
-struct BAL_CAN {short ID_CAN;char data_BAL[8];char lengt};
+struct BAL_CAN {short ID_CAN;char data_BAL[8];char lengt;};
 struct BAL_CAN BAL_INIT_CAN;
 osMailQId ID_BAL_CAN;	
 osMailQDef (BAL_CAN,5,BAL_INIT_CAN);
@@ -32,6 +33,9 @@ extern ARM_DRIVER_USART Driver_USART2;
 char BAL_INIT;
 osMailQId ID_BAL_DFPLAYER;
 osMailQDef(BAL_DFPLAYER,5,BAL_INIT);
+
+//Variable Lidar
+extern ARM_DRIVER_USART Driver_USART0;
 
 //Variable GPS
 extern ARM_DRIVER_USART Driver_USART1;
@@ -46,11 +50,13 @@ osThreadDef(Thread_CAN_Receiver, osPriorityNormal,1,0);
 
 //OS du DFPlayer
 void Gestion_DFPLAYER (void const * argument);
-void test_DFPLAYER (void const * argument);
 osThreadId ID_Gestion_DFPLAYER;
-osThreadId ID_test_DFPLAYER;
 osThreadDef (Gestion_DFPLAYER ,osPriorityNormal , 1,0);
-osThreadDef (test_DFPLAYER ,osPriorityNormal , 1,0);
+
+//Os du Lidar
+void Thread_Gestion_Lidar(void const* arg);
+osThreadId ID_Gestion_Lidar;
+osThreadDef(Thread_Gestion_Lidar,osPriorityNormal,1,0);
 
 //OS du GPS
 void Thread_GPS(void const*argument);
@@ -59,6 +65,8 @@ osThreadDef(Thread_GPS,osPriorityNormal,1,0);
 
 int main (void)
 {
+	LED_Initialize();
+
 	//Init CAN
 	init_CAN_Transmiter();
 	init_CAN_Receiver();	
@@ -75,17 +83,22 @@ int main (void)
 	
 	//Init GPS
 	Init_UART1();
-	
-	LED_Initialize();
+
+	//Init Lidar
+	Init_PWM_Lidar();
+	Init_UART0();
+
   osKernelInitialize ();
 	
 	ID_CAN_Transmiter	 	= osThreadCreate(osThread (Thread_CAN_Transmiter)	,NULL);
 	ID_CAN_Receiver 		= osThreadCreate(osThread (Thread_CAN_Receiver)		,NULL);
 	ID_Gestion_DFPLAYER	= osThreadCreate(osThread (Gestion_DFPLAYER)			,NULL);
-	ID_test_DFPLAYER		= osThreadCreate(osThread (test_DFPLAYER) 				,NULL);
 	ID_GestionGPS				= osThreadCreate(osThread (Thread_GPS) 						,NULL);
+//	ID_Gestion_Lidar		= osThreadCreate(osThread (Thread_Gestion_Lidar)	,NULL);
+
 	ID_BAL_DFPLAYER			= osMailCreate	(osMailQ	(BAL_DFPLAYER)					,NULL);
 	ID_BAL_CAN 					= osMailCreate	(osMailQ 	(BAL_CAN)								,NULL);
+
 	ID_mut_GLCD					= osMutexCreate (osMutex	(mut_GLCD));
 
 	osKernelStart ();
@@ -104,20 +117,6 @@ void Gestion_DFPLAYER (void const * argument)
 		osMailFree(ID_BAL_DFPLAYER,ptr_reception);								// libération espace de la boite mail
 		
 		LectureDFPlayer(num_son);																	// lecture du son
-	}
-}
-
-void test_DFPLAYER (void const * argument)
-{
-
-	char num_son = 0x03;	
-	int *ptr;
-	
-	while(1)
-	{
-
-
-
 	}
 }
 
@@ -156,6 +155,7 @@ void Thread_CAN_Receiver()
 
 	while(1)
 	{		
+		ctp+=1;
 		osSignalWait(0x01, osWaitForever);		// sommeil en attente réception
 		Driver_CAN1.MessageRead(0,&rx_msg_info, data_buf,2); //reçoit 1 donnée
 		identifiant = rx_msg_info.id;
@@ -166,80 +166,16 @@ void Thread_CAN_Receiver()
 			{
 				osMutexWait(ID_mut_GLCD,osWaitForever);
 				sprintf(texte,"ID = %x",identifiant);
-				GLCD_DrawString(1,1,texte);
+				GLCD_DrawString(1,130,texte);
 				sprintf(texte,"LED = %x, ALS=%x",data_buf[0],data_buf[1]);
-				GLCD_DrawString(5,30,texte);
+				GLCD_DrawString(5,160,texte);
 				osMutexRelease(ID_mut_GLCD);
 				break;
 			}
 			case 0x011:		//Ultrason 1 Av-D
 			{
 				osMutexWait(ID_mut_GLCD,osWaitForever);
-				sprintf(texte,"ID = %x , ctp1 Av-D",identifiant);
-				GLCD_DrawString(1,1,texte);
-				sprintf(texte,"Ctp1=%0x, Ctp2=%0x ",data_buf[0],data_buf[1]);
-				GLCD_DrawString(5,30,texte);
-				osMutexRelease(ID_mut_GLCD);
-				if (((data_buf[0]<10)&&(data_buf[0]!=0)) || ((data_buf[1]<10)&&(data_buf[1])))
-				{
-					ptr_envoie=osMailAlloc(ID_BAL_DFPLAYER,osWaitForever);
-					*ptr_envoie=0x02;
-					osMailPut(ID_BAL_DFPLAYER,ptr_envoie);
-				}
-				break;
-			}
-			case 0x012:		//Ultrason 2 AV-M
-			{
-				osMutexWait(ID_mut_GLCD,osWaitForever);
-				sprintf(texte,"ID = %x , ctp2 AV-M",identifiant);
-				GLCD_DrawString(1,1,texte);
-				sprintf(texte,"Ctp1=%0x, Ctp2=%0x ",data_buf[0],data_buf[1]);
-				GLCD_DrawString(5,30,texte);
-				osMutexRelease(ID_mut_GLCD);
-				if (((data_buf[0]<10)&&(data_buf[0]!=0)) || ((data_buf[1]<10)&&(data_buf[1])))
-				{
-					ptr_envoie=osMailAlloc(ID_BAL_DFPLAYER,osWaitForever);
-					*ptr_envoie=0x02;
-					osMailPut(ID_BAL_DFPLAYER,ptr_envoie);
-				}
-				break;
-			}				
-			case 0x013:		//Ultrason 3 AV-G
-			{
-				osMutexWait(ID_mut_GLCD,osWaitForever);
-				sprintf(texte,"ID = %x , ctp3 AV-G",identifiant);
-				GLCD_DrawString(1,1,texte);
-				sprintf(texte,"Ctp1=%0x, Ctp2=%0x ",data_buf[0],data_buf[1]);
-				GLCD_DrawString(5,30,texte);
-				osMutexRelease(ID_mut_GLCD);
-				if (((data_buf[0]<10)&&(data_buf[0]!=0)) || ((data_buf[1]<10)&&(data_buf[1])))
-				{
-					ptr_envoie=osMailAlloc(ID_BAL_DFPLAYER,osWaitForever);
-					*ptr_envoie=0x02;
-					osMailPut(ID_BAL_DFPLAYER,ptr_envoie);
-				}
-				break;
-			}
-			case 0x014:		//Ultrason 4 AR-D
-			{
-				osMutexWait(ID_mut_GLCD,osWaitForever);
-				sprintf(texte,"ID = %x , ctp4 AR-D",identifiant);
-				GLCD_DrawString(1,1,texte);
-				sprintf(texte,"Ctp1=%0x, Ctp2=%0x ",data_buf[0],data_buf[1]);
-				GLCD_DrawString(5,30,texte);
-				osMutexRelease(ID_mut_GLCD);
-				if (((data_buf[0]<10)&&(data_buf[0]!=0)) || ((data_buf[1]<10)&&(data_buf[1])))
-				{
-					ptr_envoie=osMailAlloc(ID_BAL_DFPLAYER,osWaitForever);
-					*ptr_envoie=0x02;
-					osMailPut(ID_BAL_DFPLAYER,ptr_envoie);
-				}
-				break;
-			}
-			case 0x015:		//Ultrason 5 AR-G
-			{
-				osMutexWait(ID_mut_GLCD,osWaitForever);
-				sprintf(texte,"ID = %x , ctp5 AR_G",identifiant);
+				sprintf(texte,"ID = %x , ctp1 Av",identifiant);
 				GLCD_DrawString(1,1,texte);
 				sprintf(texte,"Ctp1=%0x, Ctp2=%0x ",data_buf[0],data_buf[1]);
 				GLCD_DrawString(5,30,texte);
@@ -254,13 +190,26 @@ void Thread_CAN_Receiver()
 			}
 			case 0x006:		//GPS
 			{
-				LED_On(3);
 				osMutexWait(ID_mut_GLCD,osWaitForever);
 				sprintf(texte,"ID = %x , ctp= %d",identifiant,ctp);
 				GLCD_DrawString(1,1,texte);
 				sprintf(texte,"PosX=%0x, PosY=%0x",data_buf[0],data_buf[1]);
 				GLCD_DrawString(5,30,texte);
 				osMutexRelease(ID_mut_GLCD);
+				break;
+			}
+			case 0x009:		//RFID
+			{
+				osMutexWait(ID_mut_GLCD,osWaitForever);
+				sprintf(texte,"ID = %x , ctp= %d",identifiant,ctp);
+				GLCD_DrawString(1,1,texte);
+				sprintf(texte,"VROOOOOOOM !");
+				GLCD_DrawString(5,30,texte);
+				osMutexRelease(ID_mut_GLCD);
+				
+				ptr_envoie=osMailAlloc(ID_BAL_DFPLAYER,osWaitForever);
+				*ptr_envoie=0x02;
+				osMailPut(ID_BAL_DFPLAYER,ptr_envoie);
 				break;
 			}
 		}
@@ -282,11 +231,12 @@ void Thread_GPS (void const*argument)
 	//BAL_CAN
 	struct BAL_CAN envoie;
 	struct BAL_CAN *ptr_envoie;
+
 	char texte[30];
 	while(1)
 	{
 		Driver_USART1.Receive(tab,1);
-		while (Driver_USART1.GetRxCount() <1 ) ; // on attend que 1 case soit pleine
+    osSignalWait(0x01, osWaitForever);
 		switch (ETAT)
 		{
 			case 0:
@@ -317,6 +267,7 @@ void Thread_GPS (void const*argument)
 			
 					if (tab2[11]==',')
 					{
+							
 							pixLongiLati[0]=0x00;
 							pixLongiLati[1]=0x00;
 					}
@@ -329,7 +280,10 @@ void Thread_GPS (void const*argument)
 							degLongi = longitude[0]*100 + longitude[1]*10 + longitude[2]*convM + longitude[3]*convM*10 + longitude[4]*convM + longitude[6]*convM*0.1 + longitude[7]*convM*0.01 + longitude[8]*convM*0.001 + longitude[9]*convM*0.0001 ;
 							pixLati = (degLati- 48.788358)/ 0.0000114+32;
 							pixLongi = (degLongi- 2.327059)/ 0.0000034+10;
-							
+							sprintf(donneelongi,"longitude=%s",longitude);
+							sprintf(donneelati,"latitude=%s",latitude);
+							GLCD_DrawString(5,120,latitude);
+							GLCD_DrawString(5,140,longitude);
 							if ( degLati > 48.788350 & degLongi < 2.327065)
 							{
 								pixLati=32;
@@ -370,14 +324,77 @@ void Thread_GPS (void const*argument)
 		osMutexWait(ID_mut_GLCD,osWaitForever);
 		sprintf(texte,"ID = %x",envoie.ID_CAN);
 		GLCD_DrawString(1,70,texte);
-		sprintf(texte,"PosX=0x%02x PosY=0x%02x",envoie.data_BAL[0],envoie.data_BAL[1]);
-		GLCD_DrawString(5,100,texte);	
+		sprintf(texte,"PosX=0x%02x PosY=0x%02x",envoie.data_BAL[0],envoie.data_BAL[1]);	
+		GLCD_DrawString(1,100,texte);
 		osMutexRelease(ID_mut_GLCD);
 		
-		ptr_envoie=osMailAlloc(ID_BAL_CAN, osWaitForever);	// attente de place dans la boite mail
-		*ptr_envoie=envoie;																	// affectation message dans la boite mail
-		osMailPut(ID_BAL_CAN,ptr_envoie);										// envoie sur le bus CAN (déclenche fonction CAN)
+//		ptr_envoie=osMailAlloc(ID_BAL_CAN, osWaitForever);	// attente de place dans la boite mail
+//		*ptr_envoie=envoie;																	// affectation message dans la boite mail
+//		osMailPut(ID_BAL_CAN,ptr_envoie);										// envoie sur le bus CAN (déclenche fonction CAN)
 		osDelay(1000);
 	}
 }
 
+void Thread_Gestion_Lidar(void const* arg)
+{
+	char tabR[10];
+	char tabT[2]={0xA5,0x20};
+
+	char tabAngle[20];
+	char tabDist[20];
+	int i=0;
+	short angle1, angle2, angle, dist1, dist2, distance, qualite;
+	
+	//DFPLAYER
+	int *ptr_envoie;
+
+	//LCD
+	char texte[20];
+	//Init Lidar, début de réception
+	while(Driver_USART0.GetStatus().tx_busy == 1); 	// attente buffer TX vide
+	Driver_USART0.Send((const void*)tabT,2);				// envoie de la commande Scan "A5,20"
+	
+	for (i=0;i++;i<10) tabR[i]=0x00;
+	
+	while(1)
+	{
+		LED_On(0);
+		Driver_USART0.Receive(tabR,10);								//reception RX des trames du LiDAR
+		while(Driver_USART0.GetRxCount() < 1);		
+		osDelay(500);
+		LED_Off(0);
+		osDelay(500);
+//		for (i=0;i<10;i++)
+//		{		
+//			LED_Off(0);
+//					
+//			osMutexWait(ID_mut_GLCD,osWaitForever);
+//			sprintf(texte,"%02x  %02x",tabR[i],tabR[i+1]);
+//			GLCD_DrawString(1,130,texte);
+//			osMutexRelease(ID_mut_GLCD);
+//			osDelay(200);
+//			if (((tabR[i]&0x3E)==0x3E)&&((tabR[i+1]&0x01)==0x01)) //masquage des trames de mauvaise qualité et du checksum
+//			{			
+//				LED_On(1);
+//				qualite=tabR[i];
+//				angle1=tabR[i+1];																						//placement des octets dans des variables de type short
+//				angle2=tabR[i+2];
+//				dist1=tabR[i+3];
+//				dist2=tabR[i+4];
+//				
+//				angle = ((((angle2 << 8)|angle1)>>1)&0x7FFF)>>6;						//décalage et mise en forme des octets d'angle pour avoir qqch d'utile, division par 64 pour le traitement
+//				distance = ((dist2<<8) | dist1) >>2;												//décalage et mise en forme des octets de distance pour avoir qqch d'utile, division par 4 pour le traitement
+//							
+//				if (distance>2000)	distance=2000;													//limite la valeur à 2m
+//				if (distance<=2000 && distance>=200)
+//				{
+//					LED_On(2);
+//					ptr_envoie=osMailAlloc(ID_BAL_DFPLAYER,osWaitForever);
+//					*ptr_envoie=0x01;
+//					osMailPut(ID_BAL_DFPLAYER,ptr_envoie);				
+//				}
+//			}
+//		}	
+//		osDelay(500);
+	}
+}

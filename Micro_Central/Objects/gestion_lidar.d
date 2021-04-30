@@ -1,0 +1,14 @@
+.\objects\gestion_lidar.o: Gestion_Lidar.c
+.\objects\gestion_lidar.o: C:\Keil_v5\ARM\PACK\Keil\LPC1700_DFP\2.6.0\Device\Include\LPC17xx.h
+.\objects\gestion_lidar.o: C:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Core\Include\core_cm3.h
+.\objects\gestion_lidar.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+.\objects\gestion_lidar.o: C:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Core\Include\cmsis_version.h
+.\objects\gestion_lidar.o: C:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Core\Include\cmsis_compiler.h
+.\objects\gestion_lidar.o: C:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Core\Include\cmsis_armcc.h
+.\objects\gestion_lidar.o: C:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Core\Include\mpu_armv7.h
+.\objects\gestion_lidar.o: C:\Keil_v5\ARM\PACK\Keil\LPC1700_DFP\2.6.0\Device\Include\system_LPC17xx.h
+.\objects\gestion_lidar.o: C:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include\Driver_USART.h
+.\objects\gestion_lidar.o: C:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include\Driver_Common.h
+.\objects\gestion_lidar.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stddef.h
+.\objects\gestion_lidar.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h
+.\objects\gestion_lidar.o: C:\Keil_v5\ARM\PACK\Keil\MDK-Middleware\7.0.0\Board\Board_LED.h

@@ -33,6 +33,7 @@ uint32_t HAL_GetTick (void) {
 
 #endif
 
+
 extern ARM_DRIVER_CAN Driver_CAN2;
 
 extern osThreadId ID_CAN_Transmiter;
