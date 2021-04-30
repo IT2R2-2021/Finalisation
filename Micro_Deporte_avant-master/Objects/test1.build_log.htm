@@ -21,19 +21,12 @@ Target DLL:      STLink\ST-LINKIII-KEIL_SWO.dll V2.0.18.0
 Dialog DLL:      TCM.DLL V1.14.6.0
  
 <h2>Project:</h2>
-F:\_COURS_IUT\Projet 0402\Micro_Deporte_avant-master\test1.uvprojx
-Project File Date:  03/30/2021
+C:\Users\TEMP.GEII2.001\Desktop\Micro_Deporte_avant-Ajout_CAN\test1.uvprojx
+Project File Date:  04/06/2021
 
 <h2>Output:</h2>
 *** Using Compiler 'V5.06 update 1 (build 61)', folder: 'C:\Keil_v5\ARM\ARMCC\Bin'
-Rebuild target 'Target 1'
-compiling Gestion_CAN.c...
-Gestion_CAN.c(58): warning:  #167-D: argument of type "void (*)(int, int)" is incompatible with parameter of type "ARM_CAN_SignalObjectEvent_t"
-  	Driver_CAN2.Initialize(
-ULL,Callback_CAN);
-Gestion_CAN.c(73): warning:  #1-D: last line of file ends without a newline
-  }
-Gestion_CAN.c: 2 warnings, 0 errors
+Build target 'Target 1'
 compiling main.c...
 Gestion_lumiere.h(2): warning:  #1295-D: Deprecated declaration init_PIN_PA0_ALS - give arg types
   void init_PIN_PA0_ALS();
@@ -43,31 +36,28 @@ Gestion_CAN.h(3): warning:  #1-D: last line of file ends without a newline
   void init_CAN();
 Gestion_CAN.h(3): warning:  #1295-D: Deprecated declaration init_CAN - give arg types
   void init_CAN();
-main.c(55): warning:  #1295-D: Deprecated declaration Thread_gestion_phare - give arg types
+main.c(47): warning:  #65-D: expected a ";"
+  struct BAL_CAN {short ID_CAN;char data_BAL[8];char lengt};
+main.c(58): warning:  #1295-D: Deprecated declaration Thread_gestion_phare - give arg types
   void Thread_gestion_phare();
-main.c(60): warning:  #1295-D: Deprecated declaration Thread_CAN_Transmiter - give arg types
+main.c(63): warning:  #1295-D: Deprecated declaration Thread_CAN_Transmiter - give arg types
   void Thread_CAN_Transmiter();
-main.c(61): warning:  #1295-D: Deprecated declaration Thread_CAN_Receiver - give arg types
+main.c(64): warning:  #1295-D: Deprecated declaration Thread_CAN_Receiver - give arg types
   void Thread_CAN_Receiver();
-main.c(202): warning:  #550-D: variable "evt" was set but never used
+main.c(206): warning:  #550-D: variable "evt" was set but never used
   	osEvent evt;
-main.c(270): warning:  #1-D: last line of file ends without a newline
+main.c(264): warning:  #167-D: argument of type "char *" is incompatible with parameter of type "const uint8_t *"
+  		Driver_CAN2.MessageSend(2,&tx_msg_info,reception.data_BAL,reception.lengt); 	// envoie sur l'objet 2 du CAN
+main.c(289): warning:  #1-D: last line of file ends without a newline
   }
-main.c(254): warning:  #550-D: variable "identifiant" was set but never used
+main.c(274): warning:  #550-D: variable "identifiant" was set but never used
   	int identifiant;
-main.c(255): warning:  #550-D: variable "taille" was set but never used
+main.c(275): warning:  #550-D: variable "taille" was set but never used
   	char taille;
-main.c: 11 warnings, 0 errors
-compiling LED_F4Discovery.c...
-compiling RTX_Conf_CM.c...
-compiling Gestion_lumiere.c...
-Gestion_lumiere.c(186): warning:  #1-D: last line of file ends without a newline
-  }
-Gestion_lumiere.c: 1 warning, 0 errors
-compiling stm32f4xx_hal.c...
-compiling SPI_STM32F4xx.c...
-compiling CAN_STM32F4xx.c...
-compiling stm32f4xx_hal_adc.c...
+main.c: 13 warnings, 0 errors
+linking...
+Program Size: Code=25988 RO-data=952 RW-data=124 ZI-data=6948  
+".\Objects\test1.axf" - 0 Error(s), 13 Warning(s).
 
 <h2>Software Packages used:</h2>
 
@@ -89,19 +79,19 @@ Package Vendor: Keil
 
 Package Vendor: Keil
                 http://www.keil.com/pack/Keil.STM32F4xx_DFP.2.15.0.pack
-                Keil::Device:STM32Cube HAL:Common:1.7.9
+                ::Device:STM32Cube Framework:1.0.0 (API)
                 STMicroelectronics STM32F4 Series Device Support, Drivers and Examples
-   * Component: Common Version: 1.7.9
    * Component: STM32Cube Framework Version: 1.0.0
-   * Component: ADC Version: 1.7.9
    * Component: Startup Version: 2.6.3
+   * Component: ADC Version: 1.7.9
    * Component: Classic Version: 1.7.9
-   * Component: GPIO Version: 1.7.9
-   * Component: PWR Version: 1.7.9
+   * Component: Common Version: 1.7.9
    * Component: RCC Version: 1.7.9
+   * Component: GPIO Version: 1.7.9
    * Component: I2C Version: 1.7.9
    * Component: Cortex Version: 1.7.9
    * Component: DMA Version: 1.7.9
+   * Component: PWR Version: 1.7.9
    * Component: SPI Version: 1.7.9
    * Component: USART Version: 1.7.9
    * Component: SPI Version: 2.15
@@ -109,8 +99,8 @@ Package Vendor: Keil
    * Component: CAN Version: 1.16
 
 <h2>Collection of Component include folders:</h2>
-  F:\_COURS_IUT\Projet 0402\Micro_Deporte_avant-master\RTE
-  F:\_COURS_IUT\Projet 0402\Micro_Deporte_avant-master\RTE\Device\STM32F407VGTx
+  C:\Users\TEMP.GEII2.001\Desktop\Micro_Deporte_avant-Ajout_CAN\RTE
+  C:\Users\TEMP.GEII2.001\Desktop\Micro_Deporte_avant-Ajout_CAN\RTE\Device\STM32F407VGTx
   C:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Core\Include
   C:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\Driver\Include
   C:\Keil_v5\ARM\PACK\ARM\CMSIS\5.6.0\CMSIS\RTOS\RTX\INC
@@ -133,59 +123,55 @@ Package Vendor: Keil
    * Component: ARM::CMSIS:RTOS:Keil RTX:4.82.0
       Include file:  CMSIS\RTOS\RTX\INC\cmsis_os.h
       Source file:   CMSIS\RTOS\RTX\Templates\RTX_Conf_CM.c
+      Source file:   CMSIS\RTOS\RTX\UserCodeTemplates\MemPool.c
+      Library file:  CMSIS\RTOS\RTX\LIB\ARM\RTX_CM4.lib
+      Source file:   CMSIS\RTOS\RTX\UserCodeTemplates\Semaphore.c
       Include file:  CMSIS\RTOS\RTX\UserCodeTemplates\osObjects.h
       Source file:   CMSIS\RTOS\RTX\UserCodeTemplates\MsgQueue.c
+      Source file:   CMSIS\RTOS\RTX\UserCodeTemplates\main.c
+      Source file:   CMSIS\RTOS\RTX\UserCodeTemplates\Thread.c
       Source file:   CMSIS\RTOS\RTX\SRC\ARM\SVC_Table.s
       Source file:   CMSIS\RTOS\RTX\UserCodeTemplates\Timer.c
-      Source file:   CMSIS\RTOS\RTX\UserCodeTemplates\Thread.c
-      Library file:  CMSIS\RTOS\RTX\LIB\ARM\RTX_CM4.lib
-      Source file:   CMSIS\RTOS\RTX\UserCodeTemplates\MemPool.c
-      Source file:   CMSIS\RTOS\RTX\UserCodeTemplates\main.c
-      Source file:   CMSIS\RTOS\RTX\UserCodeTemplates\MailQueue.c
-      Source file:   CMSIS\RTOS\RTX\UserCodeTemplates\Semaphore.c
       Source file:   CMSIS\RTOS\RTX\UserCodeTemplates\Mutex.c
+      Source file:   CMSIS\RTOS\RTX\UserCodeTemplates\MailQueue.c
 
    * Component: ::Board Support:LED:1.00 (API)
       Include file:  Board\Board_LED.h
+
+   * Component: ::Device:STM32Cube Framework:1.0.0 (API)
+
+   * Component: Keil::Device:Startup:2.6.3
+      Source file:   Drivers\CMSIS\Device\ST\STM32F4xx\Source\Templates\arm\startup_stm32f407xx.s
+      Source file:   MDK\Device\Source\ARM\STM32F40xxx_41xxx_OPT.s
+      Source file:   MDK\Device\Source\ARM\STM32F4xx_OTP.s
+      Include file:  Drivers\CMSIS\Device\ST\STM32F4xx\Include\stm32f4xx.h
+      Source file:   Drivers\CMSIS\Device\ST\STM32F4xx\Source\Templates\system_stm32f4xx.c
+
+   * Component: Keil::Device:STM32Cube HAL:ADC:1.7.9
+      Source file:   Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_adc.c
+      Source file:   Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_adc_ex.c
+
+   * Component: Keil::Device:STM32Cube Framework:Classic:1.7.9
+      Source file:   MDK\Templates\Src\stm32f4xx_hal_msp.c
+      Include file:  MDK\Templates_LL\Inc\main.h
+      Source file:   MDK\Templates_LL\Src\main.c
+      Include file:  MDK\Templates\Inc\stm32f4xx_it.h
+      Source file:   MDK\Templates\Src\main.c
+      Include file:  CMSIS\Driver\Config\RTE_Device.h
+      Include file:  MDK\Templates\Inc\stm32f4xx_hal_conf.h
+      Source file:   MDK\Templates\Src\stm32f4xx_it.c
+      Include file:  MDK\Templates\Inc\main.h
 
    * Component: Keil::Device:STM32Cube HAL:Common:1.7.9
       Include file:  Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal.h
       Source file:   Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal.c
 
-   * Component: ::Device:STM32Cube Framework:1.0.0 (API)
-
-   * Component: Keil::Device:STM32Cube HAL:ADC:1.7.9
-      Source file:   Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_adc_ex.c
-      Source file:   Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_adc.c
-
-   * Component: Keil::Device:Startup:2.6.3
-      Source file:   MDK\Device\Source\ARM\STM32F4xx_OTP.s
-      Source file:   Drivers\CMSIS\Device\ST\STM32F4xx\Source\Templates\arm\startup_stm32f407xx.s
-      Include file:  Drivers\CMSIS\Device\ST\STM32F4xx\Include\stm32f4xx.h
-      Source file:   MDK\Device\Source\ARM\STM32F40xxx_41xxx_OPT.s
-      Source file:   Drivers\CMSIS\Device\ST\STM32F4xx\Source\Templates\system_stm32f4xx.c
-
-   * Component: Keil::Device:STM32Cube Framework:Classic:1.7.9
-      Include file:  MDK\Templates_LL\Inc\main.h
-      Include file:  MDK\Templates\Inc\stm32f4xx_hal_conf.h
-      Include file:  MDK\Templates\Inc\stm32f4xx_it.h
-      Source file:   MDK\Templates\Src\main.c
-      Include file:  MDK\Templates\Inc\main.h
-      Source file:   MDK\Templates\Src\stm32f4xx_it.c
-      Source file:   MDK\Templates\Src\stm32f4xx_hal_msp.c
-      Include file:  CMSIS\Driver\Config\RTE_Device.h
-      Source file:   MDK\Templates_LL\Src\main.c
+   * Component: Keil::Device:STM32Cube HAL:RCC:1.7.9
+      Source file:   Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_rcc_ex.c
+      Source file:   Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_rcc.c
 
    * Component: Keil::Device:STM32Cube HAL:GPIO:1.7.9
       Source file:   Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_gpio.c
-
-   * Component: Keil::Device:STM32Cube HAL:PWR:1.7.9
-      Source file:   Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_pwr.c
-      Source file:   Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_pwr_ex.c
-
-   * Component: Keil::Device:STM32Cube HAL:RCC:1.7.9
-      Source file:   Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_rcc.c
-      Source file:   Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_rcc_ex.c
 
    * Component: Keil::Device:STM32Cube HAL:I2C:1.7.9
       Source file:   Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_i2c.c
@@ -194,8 +180,12 @@ Package Vendor: Keil
       Source file:   Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_cortex.c
 
    * Component: Keil::Device:STM32Cube HAL:DMA:1.7.9
-      Source file:   Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_dma.c
       Source file:   Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_dma_ex.c
+      Source file:   Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_dma.c
+
+   * Component: Keil::Device:STM32Cube HAL:PWR:1.7.9
+      Source file:   Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_pwr_ex.c
+      Source file:   Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_pwr.c
 
    * Component: Keil::Device:STM32Cube HAL:SPI:1.7.9
       Source file:   Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_spi.c
@@ -211,8 +201,7 @@ Package Vendor: Keil
 
    * Component: Keil::CMSIS Driver:CAN:1.16
       Source file:   CMSIS\Driver\CAN_STM32F4xx.c
-Project build/rebuild aborted.
-Build Time Elapsed:  00:00:14
+Build Time Elapsed:  00:00:03
 </pre>
 </body>
 </html>

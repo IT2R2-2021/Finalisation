@@ -44,9 +44,12 @@ static void Error_Handler(void);
 
 //Gestion CAN
 extern ARM_DRIVER_CAN Driver_CAN2;
+struct BAL_CAN {short ID_CAN;char data_BAL[8];char lengt};
+struct BAL_CAN BAL_INIT_CAN;
+osMailQId ID_BAL_CAN;
+osMailQDef (BAL_CAN,5,BAL_INIT_CAN);
 
 //Variable Global Phare
-uint8_t etat_lumiere[2]={0xAA,0x55};
 extern ARM_DRIVER_SPI Driver_SPI1;
 extern char tab_Ruban_led[60*4+4+4];
 extern ADC_HandleTypeDef myADC2Handle;
@@ -80,13 +83,14 @@ int main(void)
 	init_CAN();
 	
 		
-  /* Initialize CMSIS-RTOS2 */
-  osKernelInitialize ();
+	/* Initialize CMSIS-RTOS2 */
+	osKernelInitialize ();
 	
-//	ID_gestion_phare 	= osThreadCreate(osThread (Thread_gestion_phare)	,NULL);
-	ID_CAN_Transmiter = osThreadCreate(osThread (Thread_CAN_Transmiter)	,NULL);
-//	ID_CAN_Receiver 	= osThreadCreate(osThread (Thread_CAN_Receiver)		,NULL);
-  
+	ID_gestion_phare 	= osThreadCreate(osThread	(Thread_gestion_phare)	,NULL);
+	ID_CAN_Transmiter = osThreadCreate(osThread	(Thread_CAN_Transmiter)	,NULL);
+	ID_CAN_Receiver 	= osThreadCreate(osThread	(Thread_CAN_Receiver)		,NULL);
+	ID_BAL_CAN 				= osMailCreate	(osMailQ 	(BAL_CAN)								,NULL);
+
 	osKernelStart();
 }
 
@@ -201,9 +205,13 @@ void Thread_gestion_phare()
 {
 	osEvent evt;
 	uint32_t  ADC_Value;
+	
+	//BAL_CAN
+	struct BAL_CAN envoie;
+	struct BAL_CAN *ptr_envoie;
 	while (1)
 	{
-		HAL_ADC_Start(&myADC2Handle); // start A/D conversion
+		HAL_ADC_Start(&myADC2Handle); // start A->D conversion
 		
 		if(HAL_ADC_PollForConversion(&myADC2Handle, 5) == HAL_OK) //check if conversion is completed
 		{
@@ -215,36 +223,48 @@ void Thread_gestion_phare()
 		{
 			LED_On(1);
 			switch_ruban_led(0x01);
-			etat_lumiere[0]=0xFF;
+			envoie.data_BAL[0]=0xFF;
 		}
 		if (ADC_Value>180)
 		{
 			LED_Off(1);
 			switch_ruban_led(0x00);
-			etat_lumiere[0]=0x00;
+			envoie.data_BAL[0]=0x00;
 		}
-		etat_lumiere[1]=(uint8_t)ADC_Value;
 		Driver_SPI1.Send(tab_Ruban_led,60*4+4+4);
-		evt = osSignalWait(0x01, osWaitForever);	// sommeil fin emission
-		osDelay(1000);
+		
+		envoie.data_BAL[1] = (uint8_t)ADC_Value;						// valeur de l'ALS
+		envoie.ID_CAN = 0x001;															// valeur arbitraire à changer
+		envoie.lengt = 2;																		// 2 bits envoyé (Valeur LED + valeur ALS)
+		
+		ptr_envoie=osMailAlloc(ID_BAL_CAN, osWaitForever);	// attente de place dans la boite mail
+		*ptr_envoie=envoie;																	// affectation message dans la boite mail
+		osMailPut(ID_BAL_CAN,ptr_envoie);										// envoie sur le bus CAN (déclenche fonction CAN)
+
+		evt = osSignalWait(0x01, osWaitForever);						// sommeil fin emission sur le driver SPI (ruban LED)
+		osDelay(1000);																			// délai de 1000 ms
 	}
 }
 
 void Thread_CAN_Transmiter()
 {
-		ARM_CAN_MSG_INFO tx_msg_info;
-		
-		while (1)
-		{
-			tx_msg_info.id=ARM_CAN_STANDARD_ID(0x111);		//ID=246
-			tx_msg_info.rtr=0;
-			etat_lumiere[0]+=1;
-			etat_lumiere[1]+=1;
-			LED_On(3);
-			Driver_CAN2.MessageSend(2,&tx_msg_info,etat_lumiere,2); //envoie 2 donnée
-			osSignalWait(0x01, osWaitForever);		// sommeil en attente fin emission
-			osDelay(100);
-		}		
+	osEvent EV_CAN_Transmiter;
+	ARM_CAN_MSG_INFO tx_msg_info;
+	struct BAL_CAN reception;
+	struct BAL_CAN *ptr_reception;
+	while (1)
+	{
+		EV_CAN_Transmiter=osMailGet(ID_BAL_CAN, osWaitForever);												// attente de reception d'un message
+		ptr_reception=EV_CAN_Transmiter.value.p;																			// récupération adresse du message
+		reception=*ptr_reception;																											// récupération donnée du message
+		osMailFree(ID_BAL_CAN,ptr_reception);																					// libération espace de la boite mail
+
+		tx_msg_info.id=ARM_CAN_STANDARD_ID(reception.ID_CAN);													// affectation ID
+		tx_msg_info.rtr=0;																														// donnée (0) et non commande
+		Driver_CAN2.MessageSend(2,&tx_msg_info,reception.data_BAL,reception.lengt); 	// envoie sur l'objet 2 du CAN
+		osSignalWait(0x01, osWaitForever);																						// sommeil en attente fin emission
+		osDelay(10);																																	// attente de 10 ms
+	}		
 }
 
 void Thread_CAN_Receiver()
@@ -265,6 +285,5 @@ void Thread_CAN_Receiver()
 		osDelay(1000);
 		LED_Off(2);
 		osDelay(1000);
-
 	}
 }
