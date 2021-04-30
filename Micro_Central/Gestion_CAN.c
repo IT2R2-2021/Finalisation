@@ -25,7 +25,7 @@ void Callback_CAN_Transmiter(int obj_idx, int event)
     {
     case ARM_CAN_EVENT_SEND_COMPLETE:
         /*  Message was received successfully by the obj_idx object. */
-       osSignalSet(ID_CAN_Transmiter, 0x01);
+				osSignalSet(ID_CAN_Transmiter, 0x01);
         break;
     }
 }

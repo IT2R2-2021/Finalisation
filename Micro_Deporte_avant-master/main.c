@@ -335,7 +335,7 @@ void Thread_Ultrason(void const *argument){
 		envoie.data_BAL[0]=Read_I2C_Byte(Slave_I2C_ADDR,0x03);
 		envoie.data_BAL[1]=Read_I2C_Byte(Slave_I2C_ADDR2,0x03);
 		LED_Off(1);
-		envoie.ID_CAN = 0x005;															// valeur arbitraire à changer
+		envoie.ID_CAN = 0x011;															// valeur arbitraire à changer
 		envoie.lengt = 2;																		// 2 bits envoyé (Data 1 + Data 2)
 
 		ptr_envoie=osMailAlloc(ID_BAL_CAN, osWaitForever);	// attente de place dans la boite mail

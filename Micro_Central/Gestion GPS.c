@@ -3,6 +3,7 @@
 extern ARM_DRIVER_USART Driver_USART1;
 
 void Init_UART1(void)
+{
 	Driver_USART1.Initialize(NULL);
 	Driver_USART1.PowerControl(ARM_POWER_FULL);
 	Driver_USART1.Control(	ARM_USART_MODE_ASYNCHRONOUS |
